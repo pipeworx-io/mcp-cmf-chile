@@ -1,0 +1,18 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.pipeworx-io/cmf-chile",
+  "title": "Cmf Chile",
+  "description": "CMF Chile MCP -- Comision para el Mercado Financiero (Chile's financial regulator).",
+  "version": "0.1.0",
+  "websiteUrl": "https://pipeworx.io/packs/cmf-chile",
+  "repository": {
+    "url": "https://github.com/pipeworx-io/mcp-cmf-chile",
+    "source": "github"
+  },
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://gateway.pipeworx.io/cmf-chile/mcp"
+    }
+  ]
+}
