@@ -2,7 +2,7 @@
 
 Chile's financial regulator, the Comisión para el Mercado Financiero (CMF): sanction resolutions, regulations (NCG, circulares, oficios circulares) and the registers of supervised entities and Fintec financial service providers.
 
-Part of [Pipeworx](https://pipeworx.io) — an MCP gateway connecting AI agents to 1878+ live data sources. This is an independent, unofficial integration — not affiliated with, endorsed by, or published by the upstream provider.
+Part of [Pipeworx](https://pipeworx.io) — an MCP gateway connecting AI agents to 1856+ live data sources. This is an independent, unofficial integration — not affiliated with, endorsed by, or published by the upstream provider.
 
 ## Tools
 
@@ -24,7 +24,9 @@ Every response carries `source`, `data_as_of` and `scope_searched`.
 
 ## Notes
 
-- **Natural persons are never served.** Sanction resolutions and some registers name individuals. This pack serves legal entities only: a sanction row whose subject is not recognisably a company, fund or institution keeps its number, date and action but the name and document link are withheld (`subject_withheld: true`), and `withheld_natural_person_rows` counts them. Registrants identified by a personal RUT are dropped the same way. The test is conservative, so a few real entities with unusual names may be withheld.
+- **Individuals named in sanction resolutions are served (Bruce's case ruling, 2026-10-25, scoped to `cmf_sanctions`), on the same terms as `sos-entities`.** Every row carries its source record (`source_record`: resolution number, date, CMF document link). No address is ever served for an individual: rows are an allowlist with no address field, and a natural person's RUT is stripped from the subject text (company RUTs stay). Anyone named can ask for removal at support@pipeworx.io; a removed name is replaced in the subject by `[nombre retirado a solicitud]`, the document link (which names the person) is dropped, other parties on the same resolution are kept, the name stops matching searches, and `withheld_by_removal_request` counts the rows.
+- **`subject_kind`** is `person`, `organisation`, `mixed` or `unclassified`, assigned only from explicit cues in the subject text: an honorific (don, doña, señor/a, sr/a) marks a person, a corporate-form or institutional word (S.A., Limitada, Banco, Seguros...) marks an organisation, both marks `mixed`. A bare personal name with neither cue (for example "ANDRÓNICO LUKSIC CRAIG") is `unclassified`; it is not guessed from the shape of the name, and `subject_kind_basis` states the reason. `capacity_stated` (asesor previsional, agente de ventas...) appears only when the subject says it in words. Earlier versions withheld any row without a corporate-form word, which hid real companies and every person; that filter is gone.
+- `cmf_registry` is unchanged: it still returns legal entities only, because the ruling names the sanctions register.
 - `found:false` means "not in these registers", not "does not exist". A sanction announced only in a press release is not in the resolutions register and is not searched.
 - The sanctions register is one long page; the filter runs on our side after fetching it, so each call costs one fetch regardless of the query.
 - Spanish input works best (`"finanzas abiertas"`, `"Cooperativa"`); matching is accent- and case-insensitive.
@@ -74,7 +76,7 @@ directly, instead of just this one's:
 }
 ```
 
-Both URLs reach the same gateway and the same 1878+ data sources. The
+Both URLs reach the same gateway and the same 1856+ data sources. The
 only difference is which pack's tools are listed **directly**; `ask_pipeworx`
 reaches all of them from either one.
 
@@ -88,10 +90,12 @@ curl -X POST https://gateway.pipeworx.io/v1/tools/cmf_sanctions \
 
 No account needed for the first calls. Inspect any tool: `GET https://gateway.pipeworx.io/v1/tools/cmf_sanctions`. Find one: `POST https://gateway.pipeworx.io/v1/tools/search_packs` with `{"query":"..."}`.
 
-## Standalone (no gateway account)
+## Run it from npm
 
-This package also runs as a local stdio MCP server — no Pipeworx account, no
-gateway round-trip:
+`@pipeworx/mcp-cmf-chile` is a local stdio bridge to the Pipeworx gateway: your MCP client
+starts it with `npx`, and it forwards every call to the same
+`https://gateway.pipeworx.io/cmf-chile/mcp` endpoint shown above. It needs network access;
+there is no offline mode.
 
 ```json
 {
@@ -104,15 +108,18 @@ gateway round-trip:
 }
 ```
 
-Or run it directly to confirm it starts:
+Without a key it calls anonymously, capped at 50 calls a day. A free account
+raises that to 200 a day: get a key at https://pipeworx.io/signup and add
+`"env": { "PIPEWORX_API_KEY": "<your key>" }` to the server entry.
+The key is sent as a Bearer token, the same way a hosted connection sends it,
+so calls are metered and billed exactly as they are there.
 
-```bash
-npx -y @pipeworx/mcp-cmf-chile
-```
+It lists **only** this pack's tools by default. Set `PIPEWORX_META_TOOLS=1` to
+also list `ask_pipeworx` and the other gateway-wide tools.
 
-It speaks MCP over stdin/stdout and answers `initialize`/`tools/list`/`tools/call`
-for **only** this pack's tools — none of the shared meta-tools the gateway
-connection above adds. Same source, same tools, no ask_pipeworx routing.
+Behind an HTTPS proxy: Node's built-in `fetch` does not read `HTTPS_PROXY` by
+default. Newer Node releases honour it when `NODE_USE_ENV_PROXY=1` is set; check
+your Node version's documentation.
 
 ## Using with ask_pipeworx
 
