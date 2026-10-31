@@ -1,6 +1,6 @@
 {
   "name": "@pipeworx/mcp-cmf-chile",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "CMF Chile MCP -- Comision para el Mercado Financiero (Chile's financial regulator).",
   "type": "module",
   "main": "lib/index.js",
@@ -27,7 +27,7 @@
     "mode": "gateway",
     "slug": "cmf-chile",
     "gatewaySlug": "cmf-chile",
-    "sourceHash": "v1-b634dac6025efe5312ec354e90823c79cc6575d5a2f2f508373d7eb85eb6d0b6",
-    "sourceCommit": "4277282d72f9bf55e548b3799aaf737baf22152f"
+    "sourceHash": "v1-41f1ed1a76be97a19f36ed02f4c23ac284c3fb2f528ff8fcd1659d1c77a6d044",
+    "sourceCommit": "8cc978183948532674e797c429305c9d8ab2a1c3"
   }
 }
